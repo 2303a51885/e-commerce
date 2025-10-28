@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShadowCart – Mini E-Commerce</title>
+
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f3f4f6;
+    color: #222;
+    margin: 0;
+  }
+
+  header {
+    background: linear-gradient(90deg, #0f172a, #1e293b);
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-size: 22px;
+    letter-spacing: 1px;
+  }
+  #search {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    width: 250px;
+  }
+
+  nav {
+    background: #1e293b;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+  }
+  nav button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 15px;
+    margin: 0 10px;
+    cursor: pointer;
+  }
+  nav button:hover {
+    text-decoration: underline;
+  }
+
+  main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    padding: 30px;
+  }
+
+  .product {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 15px;
+    width: 250px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .product:hover {
+    transform: scale(1.04);
+  }
+  .product img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .product h3 {
+    font-size: 18px;
+    margin: 10px 0 5px;
+  }
+  .product p {
+    font-size: 15px;
+    color: #666;
+  }
+  .product button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .product button:hover {
+    background: #1e40af;
+  }
+
+  aside {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    width: 340px;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.15);
+    padding: 20px;
+    overflow-y: auto;
+  }
+  aside h2 {
+    text-align: center;
+  }
+  .cart-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    align-items: center;
+  }
+  .cart-item-name {
+    flex: 1;
+    margin-right: 10px;
+  }
+  .qty-btn {
+    padding: 2px 8px;
+    background: #e5e7eb;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #total {
+    margin-top: 15px;
+    text-align: right;
+    font-weight: bold;
+  }
+  #place {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #place:hover {
+    background: #15803d;
+  }
+  @media (max-width: 900px) {
+    aside { position: relative; width: 100%; height: auto; box-shadow: none; }
+    main { padding: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛒 ShadowCart</h1>
+  <input id="search" type="text" placeholder="Search products...">
+</header>
+
+<nav>
+  <button onclick="filterCategory('all')">All</button>
+  <button onclick="filterCategory('electronics')">Electronics</button>
+  <button onclick="filterCategory('fashion')">Fashion</button>
+  <button onclick="filterCategory('home')">Home</button>
+</nav>
+
+<main id="product-list"></main>
+
+<aside>
+  <h2>🧺 Cart</h2>
+  <div id="cart"></div>
+  <div id="total"></div>
+  <button id="place">Place Order</button>
+</aside>
+
+<script>
+const products = [
+  { id: 1, name: 'Wireless Headphones', price: 49.99, stock: 10, category: 'electronics', image: 'https://m.media-amazon.com/images/I/71yMHG+4XDL._AC_UF894,1000_QL80_.jpg' },
+  { id: 2, name: 'Smartwatch', price: 89.99, stock: 15, category: 'electronics', image: 'https://m.media-amazon.com/images/I/61WAINtWP4L._AC_UF894,1000_QL80_.jpg' },
+  { id: 3, name: 'Men’s Jacket', price: 59.99, stock: 12, category: 'fashion', image: 'https://m.media-amazon.com/images/I/71S6k0jA8fL._AC_UY879_.jpg' },
+  { id: 4, name: 'Sneakers', price: 69.99, stock: 8, category: 'fashion', image: 'https://m.media-amazon.com/images/I/61H9ksCfX0L._AC_UY879_.jpg' },
+  { id: 5, name: 'Coffee Maker', price: 39.99, stock: 10, category: 'home', image: 'https://m.media-amazon.com/images/I/61PwpbU7XPL._AC_UF894,1000_QL80_.jpg' },
+  { id: 6, name: 'LED Desk Lamp', price: 29.99, stock: 20, category: 'home', image: 'https://m.media-amazon.com/images/I/61Gl0a4OIsL._AC_UF894,1000_QL80_.jpg' }
+];
+
+let cart = [];
+let filteredProducts = products;
+
+function displayProducts(list) {
+  const container = document.getElementById('product-list');
+  container.innerHTML = '';
+  list.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'product';
+    card.innerHTML = `
+      <img src="${p.image}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <p>$${p.price.toFixed(2)} | Stock: ${p.stock}</p>
+      <button ${p.stock === 0 ? 'disabled' : ''}>Add to Cart</button>
+    `;
+    card.querySelector('button').onclick = () => addToCart(p);
+    container.appendChild(card);
+  });
+}
+
+function addToCart(p) {
+  const item = cart.find(i => i.productId === p.id);
+  if (item) {
+    if (item.quantity < p.stock) item.quantity++;
+    else return alert('Out of stock!');
+  } else {
+    cart.push({ productId: p.id, name: p.name, price: p.price, quantity: 1 });
+  }
+  renderCart();
+}
+
+function updateQty(id, change) {
+  const item = cart.find(i => i.productId === id);
+  if (!item) return;
+  item.quantity += change;
+  if (item.quantity <= 0) cart = cart.filter(i => i.productId !== id);
+  renderCart();
+}
+
+function renderCart() {
+  const c = document.getElementById('cart');
+  c.innerHTML = '';
+  if (cart.length === 0) {
+    c.innerHTML = '<p>Your cart is empty.</p>';
+    document.getElementById('total').innerText = '';
+    return;
+  }
+  cart.forEach(i => {
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <div class="cart-item-name">${i.name}</div>
+      <div>
+        <button class="qty-btn" onclick="updateQty(${i.productId}, -1)">−</button>
+        ${i.quantity}
+        <button class="qty-btn" onclick="updateQty(${i.productId}, 1)">+</button>
+      </div>
+    `;
+    c.appendChild(div);
+  });
+  const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  document.getElementById('total').innerText = 'Total: $' + total.toFixed(2);
+}
+
+function filterCategory(cat) {
+  filteredProducts = cat === 'all' ? products : products.filter(p => p.category === cat);
+  displayProducts(filteredProducts);
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  const term = e.target.value.toLowerCase();
+  const filtered = filteredProducts.filter(p => p.name.toLowerCase().includes(term));
+  displayProducts(filtered);
+});
+
+document.getElementById('place').onclick = () => {
+  if (cart.length === 0) return alert('Cart is empty!');
+  alert('✅ Order placed successfully!');
+  cart = [];
+  renderCart();
+};
+
+displayProducts(products);
+</script>
+
+</body>
+</html>
